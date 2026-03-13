@@ -1,0 +1,5 @@
+# This file is a placeholder. Generated Terraform files will be placed here
+# by the DevOps AI Backend Lambda.
+#
+# The Lambda generates: main.tf, variables.tf, terraform.tfvars, outputs.tf,
+# providers.tf, and terragrunt.hcl — then pushes them to a feature/* branch.

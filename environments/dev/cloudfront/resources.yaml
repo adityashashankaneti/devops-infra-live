@@ -1,0 +1,6 @@
+# CloudFront resources — append entries here to deploy
+# Example:
+# my-cdn:
+#   origin_domain: my-bucket.s3.amazonaws.com
+#   origin_type: s3
+#   viewer_protocol_policy: redirect-to-https

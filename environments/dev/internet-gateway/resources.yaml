@@ -1,0 +1,4 @@
+# Internet Gateway resources — append entries here to deploy
+# Example:
+# my-igw:
+#   vpc_name: my-vpc

@@ -1,0 +1,16 @@
+# RDS resources — append entries here to deploy
+# Example:
+# my-database:
+#   engine: mysql
+#   engine_version: "8.0"
+#   instance_class: db.t3.micro
+#   allocated_storage: 20
+#   db_name: myapp
+#   username: admin
+#   password: changeme123
+#   subnet_names:
+#     - private-subnet-1
+#     - private-subnet-2
+#   security_groups:
+#     - db-sg
+#   multi_az: false

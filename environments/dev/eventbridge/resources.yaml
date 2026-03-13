@@ -1,0 +1,7 @@
+# EventBridge resources — append entries here to deploy
+# Example:
+# my-event-rule:
+#   description: "Trigger on EC2 state change"
+#   event_pattern:
+#     source: ["aws.ec2"]
+#     detail-type: ["EC2 Instance State-change Notification"]

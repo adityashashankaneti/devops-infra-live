@@ -1,0 +1,4 @@
+# ECS resources — append entries here to deploy
+# Example:
+# my-cluster:
+#   container_insights: enabled

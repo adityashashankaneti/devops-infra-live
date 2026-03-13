@@ -1,0 +1,10 @@
+# EC2 resources — append entries here to deploy
+# Example:
+# web-server:
+#   instance_type: t3.micro
+#   ami: ami-0c7217cdde317cfec
+#   subnet_name: public-subnet-1
+#   security_groups:
+#     - web-sg
+#   associate_public_ip_address: true
+#   key_name: my-keypair

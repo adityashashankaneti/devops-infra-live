@@ -1,0 +1,4 @@
+# SNS resources — append entries here to deploy
+# Example:
+# my-topic:
+#   display_name: "My Notifications"
