@@ -1,1 +1,2 @@
-{}
+spoke-vpc-nat-gw:
+  subnet_name: spoke-vpc-public-subnet
