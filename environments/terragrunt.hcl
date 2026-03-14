@@ -45,8 +45,8 @@ generate "provider" {
 }
 
 locals {
-  # Read project-level config
-  project_config = yamldecode(file("project.yaml"))
+  # Read project-level config — resolved from the child module's directory context
+  project_config = yamldecode(file(find_in_parent_folders("project.yaml")))
   project        = local.project_config.project
   region         = local.project_config.region
 }
