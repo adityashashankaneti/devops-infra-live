@@ -1,7 +1,7 @@
 subnet1-public:
   vpc_name: spoke-vpc
-  cidr_block: 10.0.1.0/24
-  availability_zone: us-east-1a
+  cidr_block: 10.0.0.1/24
+  availability_zone: us-west-2a
   map_public_ip_on_launch: true
   type: public
   public: true
