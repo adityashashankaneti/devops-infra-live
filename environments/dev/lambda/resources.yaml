@@ -1,9 +1,1 @@
-# Lambda resources — append entries here to deploy
-# Example:
-# my-function:
-#   runtime: python3.12
-#   handler: index.handler
-#   memory_size: 256
-#   timeout: 30
-#   environment_variables:
-#     TABLE_NAME: my-table
+{}

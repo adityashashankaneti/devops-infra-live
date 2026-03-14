@@ -1,6 +1,1 @@
-# S3 resources — append entries here to deploy
-# Example:
-# my-bucket:
-#   bucket_name: my-project-assets
-#   versioning: true
-#   sse_algorithm: aws:kms
+{}

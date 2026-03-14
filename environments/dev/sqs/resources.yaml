@@ -1,6 +1,1 @@
-# SQS resources — append entries here to deploy
-# Example:
-# my-queue:
-#   delay_seconds: 0
-#   visibility_timeout_seconds: 30
-#   message_retention_seconds: 345600
+{}

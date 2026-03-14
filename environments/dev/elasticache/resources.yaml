@@ -1,10 +1,1 @@
-# ElastiCache resources — append entries here to deploy
-# Example:
-# my-redis:
-#   engine: redis
-#   node_type: cache.t3.micro
-#   num_cache_nodes: 1
-#   subnet_names:
-#     - private-subnet-1
-#   security_groups:
-#     - cache-sg
+{}

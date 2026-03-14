@@ -1,4 +1,1 @@
-# NAT Gateway resources — append entries here to deploy
-# Example:
-# my-nat:
-#   subnet_name: public-subnet-1
+{}

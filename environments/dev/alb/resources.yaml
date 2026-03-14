@@ -1,14 +1,1 @@
-# ALB/NLB resources — append entries here to deploy
-# Example:
-# my-alb:
-#   vpc_name: my-vpc
-#   subnet_names:
-#     - public-subnet-1
-#     - public-subnet-2
-#   security_groups:
-#     - web-sg
-#   internal: false
-#   target_group:
-#     port: 80
-#     protocol: HTTP
-#     health_check_path: /health
+{}
