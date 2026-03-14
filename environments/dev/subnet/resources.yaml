@@ -1,7 +1,5 @@
-# Subnet resources — append entries here to deploy
-# Example:
-# public-subnet-1:
-#   vpc_name: my-vpc
-#   cidr_block: "10.0.1.0/24"
-#   availability_zone: us-east-1a
-#   map_public_ip_on_launch: true
+subnet1-public:
+  vpc_name: spoke-vpc
+  cidr_block: 10.0.1.0/24
+  availability_zone: us-east-1a
+  map_public_ip_on_launch: true

@@ -1,22 +1,8 @@
-# Route table resources go here.
-# Claude generates this from the canvas architecture.
-#
-# Example:
-# public-rt:
-#   vpc_name: my-vpc
-#   routes:
-#     - cidr_block: "0.0.0.0/0"
-#       gateway_type: igw
-#       gateway_name: my-igw
-#   subnet_associations:
-#     - public-subnet-1
-#     - public-subnet-2
-#
-# private-rt:
-#   vpc_name: my-vpc
-#   routes:
-#     - cidr_block: "0.0.0.0/0"
-#       gateway_type: nat
-#       gateway_name: my-nat-gw
-#   subnet_associations:
-#     - private-subnet-1
+spoke-vpc-public-rt:
+  vpc_name: spoke-vpc
+  routes:
+  - cidr_block: 0.0.0.0/0
+    gateway_type: igw
+    gateway_name: spoke-vpc-igw
+  subnet_associations:
+  - subnet1-public
