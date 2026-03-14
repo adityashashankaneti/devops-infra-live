@@ -5,3 +5,9 @@ subnet1-public:
   map_public_ip_on_launch: true
   type: public
   public: true
+private-subnet:
+  vpc_name: spoke-vpc
+  cidr_block: 10.0.0.64/26
+  availability_zone: us-west-2a
+  map_public_ip_on_launch: false
+  type: private
