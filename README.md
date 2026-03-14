@@ -94,8 +94,7 @@ Resources reference each other by **name** (not ID):
 
 | Secret | Description |
 |---|---|
-| `AWS_ACCESS_KEY_ID` | AWS access key for Terraform |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key for Terraform |
+| `AWS_ROLE_ARN` | AWS IAM role ARN for GitHub Actions OIDC assumption |
 | `AWS_REGION` | Default AWS region (e.g. `us-east-1`) |
 
 ### Terraform State

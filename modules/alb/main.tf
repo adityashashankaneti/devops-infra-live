@@ -50,3 +50,25 @@ resource "aws_lb_listener" "this" {
     target_group_arn = aws_lb_target_group.this[each.key].arn
   }
 }
+
+# ── Target Group Attachments ──────────────────────────────────────────────────
+# Registers EC2 instances into the target group when instance_name is set.
+locals {
+  attachments = flatten([
+    for lb_key, lb in var.resources : [
+      for inst_name in try(lb.instance_names, []) : {
+        attach_key = "${lb_key}-${inst_name}"
+        lb_key     = lb_key
+        inst_name  = inst_name
+      }
+    ] if try(lb.target_group, null) != null
+  ])
+}
+
+resource "aws_lb_target_group_attachment" "this" {
+  for_each = { for a in local.attachments : a.attach_key => a }
+
+  target_group_arn = aws_lb_target_group.this[each.value.lb_key].arn
+  target_id        = var.instance_ids[each.value.inst_name]
+  port             = try(var.resources[each.value.lb_key].target_group.port, 80)
+}

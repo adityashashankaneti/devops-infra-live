@@ -7,10 +7,11 @@ terraform {
 }
 
 locals {
-  config = yamldecode(file("resources.yaml"))
+  config        = yamldecode(file("resources.yaml"))
+  project_vars  = yamldecode(file(find_in_parent_folders("project.yaml")))
 }
 
 inputs = {
   resources = local.config
-  project   = local.config.project
+  project   = local.project_vars.project
 }

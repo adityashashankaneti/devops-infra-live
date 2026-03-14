@@ -17,6 +17,11 @@ variable "vpc_ids" {
   default = {}
 }
 
+variable "instance_ids" {
+  type    = map(string)
+  default = {}
+}
+
 variable "project" {
   type    = string
   default = "devops-ai"

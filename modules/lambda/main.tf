@@ -76,6 +76,35 @@ resource "aws_iam_role_policy" "lambda_connection" {
   })
 }
 
+# ── Invocation permissions from other AWS services ───────────────────────────
+# Claude generates invoke_permissions[] when another service targets this Lambda
+# (e.g. EventBridge → Lambda, SNS → Lambda, API Gateway → Lambda).
+# Each entry: { source_service, source_arn (optional), statement_id }
+locals {
+  lambda_permissions = flatten([
+    for fn_key, fn in var.resources : [
+      for idx, perm in try(fn.invoke_permissions, []) : {
+        perm_key       = "${fn_key}-${idx}"
+        fn_key         = fn_key
+        statement_id   = try(perm.statement_id, "allow-${idx}")
+        source_service = perm.source_service
+        source_arn     = try(perm.source_arn, null)
+      }
+    ]
+  ])
+}
+
+resource "aws_lambda_permission" "this" {
+  for_each = { for p in local.lambda_permissions : p.perm_key => p }
+
+  statement_id  = each.value.statement_id
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.this[each.value.fn_key].function_name
+  principal     = each.value.source_service
+
+  source_arn = each.value.source_arn
+}
+
 resource "aws_lambda_function" "this" {
   for_each = var.resources
 

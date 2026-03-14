@@ -7,7 +7,8 @@ terraform {
 }
 
 locals {
-  config = yamldecode(file("resources.yaml"))
+  config        = yamldecode(file("resources.yaml"))
+  project_vars  = yamldecode(file(find_in_parent_folders("project.yaml")))
 }
 
 dependency "vpc" {
@@ -31,10 +32,18 @@ dependency "security-group" {
   }
 }
 
+dependency "ec2" {
+  config_path = "../ec2"
+  mock_outputs = {
+    instance_ids = {}
+  }
+}
+
 inputs = {
   resources          = local.config
-  project            = local.config.project
+  project            = local.project_vars.project
   vpc_ids            = dependency.vpc.outputs.vpc_ids
   subnet_ids         = dependency.subnet.outputs.subnet_ids
   security_group_ids = dependency.security-group.outputs.security_group_ids
+  instance_ids       = dependency.ec2.outputs.instance_ids
 }

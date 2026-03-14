@@ -7,7 +7,8 @@ terraform {
 }
 
 locals {
-  config = yamldecode(file("resources.yaml"))
+  config        = yamldecode(file("resources.yaml"))
+  project_vars  = yamldecode(file(find_in_parent_folders("project.yaml")))
 }
 
 dependency "vpc" {
@@ -40,7 +41,7 @@ dependency "nat-gateway" {
 
 inputs = {
   resources       = local.config
-  project         = local.config.project
+  project         = local.project_vars.project
   vpc_ids         = dependency.vpc.outputs.vpc_ids
   subnet_ids      = dependency.subnet.outputs.subnet_ids
   igw_ids         = dependency.internet-gateway.outputs.igw_ids
