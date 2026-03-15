@@ -1,5 +1,1 @@
-devops-aditya-26950:
-  bucket_name: devops-aditya-26950
-  region: us-west-2
-  versioning: false
-  public_access_block: true
+{}
