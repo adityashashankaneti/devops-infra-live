@@ -7,9 +7,6 @@ on:
         description: 'Environment directory (e.g. dev)'
         required: true
         default: 'dev'
-      module:
-        description: 'Module to destroy (e.g. nat-gateway)'
-        required: true
 
 permissions:
   contents: read
@@ -27,7 +24,7 @@ env:
 
 jobs:
   destroy:
-    name: Destroy — ${{ github.event.inputs.project }}/${{ github.event.inputs.module }}
+    name: Destroy — ${{ github.event.inputs.project }}
     runs-on: ubuntu-latest
 
     steps:
@@ -85,13 +82,14 @@ jobs:
             echo "Stale locks cleared."
           fi
 
-      - name: Terragrunt Apply (targeted — destroys removed resource)
-        # resources.yaml was already updated by the backend (resource removed).
-        # Running plain `apply` on just this module reconciles state with config,
-        # which destroys the resource that is now absent from resources.yaml.
-        working-directory: environments/${{ github.event.inputs.project }}/${{ github.event.inputs.module }}
+      - name: Terragrunt Apply All (reconcile state after resource removal)
+        # The backend (via Claude) has already updated all affected resources.yaml
+        # files to remove the target resource and clean up dangling references.
+        # run-all apply reconciles the entire project in dependency order,
+        # destroying resources that are no longer in config.
+        working-directory: environments/${{ github.event.inputs.project }}
         run: |
-          terragrunt apply \
+          terragrunt run-all apply \
             --terragrunt-non-interactive \
             -auto-approve -no-color
 
