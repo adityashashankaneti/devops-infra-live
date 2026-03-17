@@ -1,1 +1,4 @@
-{}
+aditya-devops-test-1-bucket:
+  bucket_name: aditya-devops-test-1-bucket
+  versioning: false
+  public_access_block: true
