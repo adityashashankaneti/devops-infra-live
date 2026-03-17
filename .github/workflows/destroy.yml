@@ -15,6 +15,11 @@ permissions:
   contents: read
   id-token: write
 
+# Only one destroy at a time per project — prevents state lock fights
+concurrency:
+  group: terraform-destroy-${{ github.event.inputs.project }}
+  cancel-in-progress: false
+
 env:
   TF_VERSION: '1.9.5'
   TG_VERSION: '0.55.1'

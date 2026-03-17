@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths: ['environments/**']
   pull_request:
+    types: [opened, synchronize, reopened]
     branches: [main]
     paths: ['environments/**']
 
@@ -12,6 +13,11 @@ permissions:
   contents: read
   pull-requests: write
   id-token: write
+
+# Prevent overlapping runs on the same branch / PR
+concurrency:
+  group: terraform-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: false
 
 env:
   TF_VERSION: '1.9.5'
@@ -38,8 +44,6 @@ jobs:
             CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- environments/ | \
               grep -oP 'environments/[^/]+' | sort -u | sed 's|environments/||' || true)
           else
-            # Use github.event.before so all commits in a push batch are detected
-            # (HEAD~1 only sees the last commit and fails on the first push to a branch)
             CHANGED=$(git diff --name-only ${{ github.event.before }} HEAD -- environments/ | \
               grep -oP 'environments/[^/]+' | sort -u | sed 's|environments/||' || true)
           fi
@@ -129,7 +133,6 @@ jobs:
         run: |
           terragrunt run-all plan \
             --terragrunt-non-interactive \
-            --terragrunt-include-external-dependencies \
             -no-color 2>&1 | tee plan_output.txt
 
       - name: Release State Locks
@@ -205,7 +208,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: detect
     # Skip apply on destroy commits — those are handled by destroy.yml (workflow_dispatch)
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect.outputs.projects != '[]' && !startsWith(github.event.head_commit.message, 'destroy:')
+    if: >-
+      github.event_name == 'push'
+      && github.ref == 'refs/heads/main'
+      && needs.detect.outputs.projects != '[]'
+      && !startsWith(github.event.head_commit.message, 'destroy:')
     strategy:
       matrix:
         project: ${{ fromJson(needs.detect.outputs.projects) }}
@@ -272,7 +279,6 @@ jobs:
         run: |
           terragrunt run-all apply \
             --terragrunt-non-interactive \
-            --terragrunt-include-external-dependencies \
             -auto-approve -no-color
 
       - name: Release State Locks
