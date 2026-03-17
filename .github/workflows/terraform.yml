@@ -90,12 +90,40 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terragrunt Plan All
+        id: plan
         working-directory: environments/${{ matrix.project }}
         run: |
           terragrunt run-all plan \
             --terragrunt-non-interactive \
             --terragrunt-include-external-dependencies \
             -no-color 2>&1 | tee plan_output.txt
+
+      - name: Release State Locks
+        if: always()
+        working-directory: environments/${{ matrix.project }}
+        run: |
+          PROJECT=$(python3 -c "import yaml; print(yaml.safe_load(open('project.yaml'))['project'])")
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          TABLE="${PROJECT}-tf-lock-${ACCOUNT_ID}"
+          BUCKET="${PROJECT}-tf-state-${ACCOUNT_ID}"
+          echo "Scanning DynamoDB table: $TABLE for stale locks..."
+          LOCK_IDS=$(aws dynamodb scan \
+            --table-name "$TABLE" \
+            --filter-expression "begins_with(LockID, :prefix)" \
+            --expression-attribute-values "{\":prefix\":{\"S\":\"${BUCKET}/\"}}" \
+            --query "Items[*].LockID.S" \
+            --output text 2>/dev/null || true)
+          if [ -z "$LOCK_IDS" ]; then
+            echo "No stale locks found."
+          else
+            for LOCK_ID in $LOCK_IDS; do
+              echo "Releasing lock: $LOCK_ID"
+              aws dynamodb delete-item \
+                --table-name "$TABLE" \
+                --key "{\"LockID\":{\"S\":\"${LOCK_ID}\"}}"
+            done
+            echo "All locks released."
+          fi
 
       - name: Post Plan to PR
         uses: actions/github-script@v7
@@ -165,9 +193,37 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terragrunt Apply All
+        id: apply
         working-directory: environments/${{ matrix.project }}
         run: |
           terragrunt run-all apply \
             --terragrunt-non-interactive \
             --terragrunt-include-external-dependencies \
             -auto-approve -no-color
+
+      - name: Release State Locks
+        if: always()
+        working-directory: environments/${{ matrix.project }}
+        run: |
+          PROJECT=$(python3 -c "import yaml; print(yaml.safe_load(open('project.yaml'))['project'])")
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          TABLE="${PROJECT}-tf-lock-${ACCOUNT_ID}"
+          BUCKET="${PROJECT}-tf-state-${ACCOUNT_ID}"
+          echo "Scanning DynamoDB table: $TABLE for stale locks..."
+          LOCK_IDS=$(aws dynamodb scan \
+            --table-name "$TABLE" \
+            --filter-expression "begins_with(LockID, :prefix)" \
+            --expression-attribute-values "{\":prefix\":{\"S\":\"${BUCKET}/\"}}" \
+            --query "Items[*].LockID.S" \
+            --output text 2>/dev/null || true)
+          if [ -z "$LOCK_IDS" ]; then
+            echo "No stale locks found."
+          else
+            for LOCK_ID in $LOCK_IDS; do
+              echo "Releasing lock: $LOCK_ID"
+              aws dynamodb delete-item \
+                --table-name "$TABLE" \
+                --key "{\"LockID\":{\"S\":\"${LOCK_ID}\"}}"
+            done
+            echo "All locks released."
+          fi
