@@ -1,1 +1,5 @@
-{}
+aditya-unique-s3:
+  bucket_name: aditya-unique-s3
+  region: us-west-2
+  versioning: false
+  public_access_block: true
