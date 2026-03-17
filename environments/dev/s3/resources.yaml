@@ -1,7 +1,3 @@
-aditya-devops-test-1-bucket:
-  bucket_name: aditya-devops-test-1-bucket
-  versioning: false
-  public_access_block: true
 aditya-s3-test:
   bucket_name: aditya-s3-test
   versioning: false
