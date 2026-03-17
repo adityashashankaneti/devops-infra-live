@@ -1,0 +1,124 @@
+name: Terraform Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Environment directory (e.g. dev)'
+        required: true
+        default: 'dev'
+      module:
+        description: 'Module to destroy (e.g. nat-gateway)'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  TF_VERSION: '1.9.5'
+  TG_VERSION: '0.55.1'
+  AWS_REGION: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+jobs:
+  destroy:
+    name: Destroy — ${{ github.event.inputs.project }}/${{ github.event.inputs.module }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Setup Terragrunt
+        run: |
+          curl -sL "https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TG_VERSION }}/terragrunt_linux_amd64" -o terragrunt
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: github-actions-terragrunt-destroy
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Clear Stale State Locks
+        working-directory: environments/${{ github.event.inputs.project }}
+        run: |
+          PROJECT=$(python3 -c "import yaml; print(yaml.safe_load(open('project.yaml'))['project'])")
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text 2>/dev/null || true)
+          if [ -z "$ACCOUNT_ID" ] || [ "$ACCOUNT_ID" = "None" ]; then
+            echo "WARNING: Could not determine AWS account ID. Skipping lock cleanup."
+            exit 0
+          fi
+          TABLE="${PROJECT}-tf-lock-${ACCOUNT_ID}"
+          BUCKET="${PROJECT}-tf-state-${ACCOUNT_ID}"
+          echo "Scanning DynamoDB table: $TABLE for stale locks..."
+          mapfile -t LOCK_IDS < <(aws dynamodb scan \
+            --table-name "$TABLE" \
+            --filter-expression "begins_with(LockID, :prefix)" \
+            --expression-attribute-values "{\":prefix\":{\"S\":\"${BUCKET}/\"}}" \
+            --query "Items[*].LockID.S" \
+            --output json 2>/dev/null \
+            | python3 -c "import sys,json; [print(x) for x in json.load(sys.stdin)]" \
+            || true)
+          if [ ${#LOCK_IDS[@]} -eq 0 ]; then
+            echo "No stale locks — table is clean."
+          else
+            for LOCK_ID in "${LOCK_IDS[@]}"; do
+              echo "Removing stale lock: $LOCK_ID"
+              aws dynamodb delete-item \
+                --table-name "$TABLE" \
+                --key "{\"LockID\":{\"S\":\"${LOCK_ID}\"}}"
+            done
+            echo "Stale locks cleared."
+          fi
+
+      - name: Terragrunt Apply (targeted — destroys removed resource)
+        # resources.yaml was already updated by the backend (resource removed).
+        # Running plain `apply` on just this module reconciles state with config,
+        # which destroys the resource that is now absent from resources.yaml.
+        working-directory: environments/${{ github.event.inputs.project }}/${{ github.event.inputs.module }}
+        run: |
+          terragrunt apply \
+            --terragrunt-non-interactive \
+            -auto-approve -no-color
+
+      - name: Release State Locks
+        if: always()
+        working-directory: environments/${{ github.event.inputs.project }}
+        run: |
+          PROJECT=$(python3 -c "import yaml; print(yaml.safe_load(open('project.yaml'))['project'])")
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text 2>/dev/null || true)
+          if [ -z "$ACCOUNT_ID" ] || [ "$ACCOUNT_ID" = "None" ]; then
+            echo "WARNING: Could not determine AWS account ID. Skipping lock release."
+            exit 0
+          fi
+          TABLE="${PROJECT}-tf-lock-${ACCOUNT_ID}"
+          BUCKET="${PROJECT}-tf-state-${ACCOUNT_ID}"
+          echo "Scanning DynamoDB table: $TABLE for locks to release..."
+          mapfile -t LOCK_IDS < <(aws dynamodb scan \
+            --table-name "$TABLE" \
+            --filter-expression "begins_with(LockID, :prefix)" \
+            --expression-attribute-values "{\":prefix\":{\"S\":\"${BUCKET}/\"}}" \
+            --query "Items[*].LockID.S" \
+            --output json 2>/dev/null \
+            | python3 -c "import sys,json; [print(x) for x in json.load(sys.stdin)]" \
+            || true)
+          if [ ${#LOCK_IDS[@]} -eq 0 ]; then
+            echo "No stale locks found."
+          else
+            for LOCK_ID in "${LOCK_IDS[@]}"; do
+              echo "Releasing lock: $LOCK_ID"
+              aws dynamodb delete-item \
+                --table-name "$TABLE" \
+                --key "{\"LockID\":{\"S\":\"${LOCK_ID}\"}}"
+            done
+            echo "All locks released."
+          fi
