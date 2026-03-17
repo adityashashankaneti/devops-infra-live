@@ -7,7 +7,7 @@
 resource "aws_route_table" "this" {
   for_each = var.resources
 
-  vpc_id = var.vpc_ids[each.value.vpc_name]
+  vpc_id = lookup(var.vpc_ids, each.value.vpc_name, null)
 
   tags = merge(
     { Name = each.key, Project = var.project, ManagedBy = "terraform" },
@@ -46,8 +46,8 @@ resource "aws_route" "this" {
   route_table_id         = aws_route_table.this[each.value.rt_key].id
   destination_cidr_block = each.value.cidr_block
 
-  gateway_id     = each.value.gateway_type == "igw" ? var.igw_ids[each.value.gateway_name] : null
-  nat_gateway_id = each.value.gateway_type == "nat" ? var.nat_gateway_ids[each.value.gateway_name] : null
+  gateway_id     = each.value.gateway_type == "igw" ? lookup(var.igw_ids, each.value.gateway_name, null) : null
+  nat_gateway_id = each.value.gateway_type == "nat" ? lookup(var.nat_gateway_ids, each.value.gateway_name, null) : null
 }
 
 # ── Subnet Associations ──────────────────────────────────────────────────────
@@ -55,5 +55,5 @@ resource "aws_route_table_association" "this" {
   for_each = { for a in local.all_associations : a.assoc_key => a }
 
   route_table_id = aws_route_table.this[each.value.rt_key].id
-  subnet_id      = var.subnet_ids[each.value.subnet_name]
+  subnet_id      = lookup(var.subnet_ids, each.value.subnet_name, null)
 }

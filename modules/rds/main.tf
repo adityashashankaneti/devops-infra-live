@@ -2,7 +2,7 @@ resource "aws_db_subnet_group" "this" {
   for_each = var.resources
 
   name       = "${each.key}-subnet-group"
-  subnet_ids = [for s in each.value.subnet_names : var.subnet_ids[s]]
+  subnet_ids = [for s in each.value.subnet_names : lookup(var.subnet_ids, s, null)]
 
   tags = { Name = "${each.key}-subnet-group", Project = var.project, ManagedBy = "terraform" }
 }

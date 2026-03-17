@@ -128,7 +128,7 @@ resource "aws_lambda_function" "this" {
   dynamic "vpc_config" {
     for_each = try(each.value.subnet_names, null) != null ? [1] : []
     content {
-      subnet_ids         = [for s in each.value.subnet_names : var.subnet_ids[s]]
+      subnet_ids         = [for s in each.value.subnet_names : lookup(var.subnet_ids, s, null)]
       security_group_ids = try([for sg in each.value.security_groups : var.security_group_ids[sg]], [])
     }
   }

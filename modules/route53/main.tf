@@ -7,7 +7,7 @@ resource "aws_route53_zone" "this" {
   dynamic "vpc" {
     for_each = try(each.value.private_zone, false) ? [1] : []
     content {
-      vpc_id = var.vpc_ids[each.value.vpc_name]
+      vpc_id = lookup(var.vpc_ids, each.value.vpc_name, null)
     }
   }
 

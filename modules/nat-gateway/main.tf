@@ -10,7 +10,7 @@ resource "aws_nat_gateway" "this" {
   for_each = var.resources
 
   allocation_id = aws_eip.this[each.key].id
-  subnet_id     = var.subnet_ids[each.value.subnet_name]
+  subnet_id     = lookup(var.subnet_ids, each.value.subnet_name, null)
 
   tags = merge(
     { Name = each.key, Project = var.project, ManagedBy = "terraform" },

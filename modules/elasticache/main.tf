@@ -20,5 +20,5 @@ resource "aws_elasticache_subnet_group" "this" {
   for_each = { for k, v in var.resources : k => v if try(v.subnet_names, null) != null }
 
   name       = "${each.key}-subnet-group"
-  subnet_ids = [for s in each.value.subnet_names : var.subnet_ids[s]]
+  subnet_ids = [for s in each.value.subnet_names : lookup(var.subnet_ids, s, null)]
 }

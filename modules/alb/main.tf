@@ -10,7 +10,7 @@ resource "aws_lb" "this" {
     []
   )
 
-  subnets = [for s in each.value.subnet_names : var.subnet_ids[s]]
+  subnets = [for s in each.value.subnet_names : lookup(var.subnet_ids, s, null)]
 
   enable_deletion_protection = try(each.value.deletion_protection, false)
 
@@ -26,7 +26,7 @@ resource "aws_lb_target_group" "this" {
   name        = "${each.key}-tg"
   port        = try(each.value.target_group.port, 80)
   protocol    = try(each.value.target_group.protocol, "HTTP")
-  vpc_id      = var.vpc_ids[each.value.vpc_name]
+  vpc_id      = lookup(var.vpc_ids, each.value.vpc_name, null)
   target_type = try(each.value.target_group.target_type, "instance")
 
   health_check {
@@ -69,6 +69,6 @@ resource "aws_lb_target_group_attachment" "this" {
   for_each = { for a in local.attachments : a.attach_key => a }
 
   target_group_arn = aws_lb_target_group.this[each.value.lb_key].arn
-  target_id        = var.instance_ids[each.value.inst_name]
+  target_id        = lookup(var.instance_ids, each.value.inst_name, null)
   port             = try(var.resources[each.value.lb_key].target_group.port, 80)
 }

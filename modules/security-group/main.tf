@@ -3,7 +3,7 @@ resource "aws_security_group" "this" {
 
   name        = each.key
   description = try(each.value.description, "Managed by DevOps AI")
-  vpc_id      = var.vpc_ids[each.value.vpc_name]
+  vpc_id      = lookup(var.vpc_ids, each.value.vpc_name, null)
 
   # Default egress: allow all outbound
   dynamic "egress" {
