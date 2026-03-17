@@ -1,1 +1,2 @@
-{}
+spoke-vpc-igw:
+  vpc_name: spoke-vpc
