@@ -1,1 +1,5 @@
-{}
+sakshi-s3-unique-bucket:
+  bucket_name: sakshi-s3-unique-bucket
+  region: us-west-2
+  versioning: false
+  public_access_block: true
