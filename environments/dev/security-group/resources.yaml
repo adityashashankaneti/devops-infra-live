@@ -1,1 +1,10 @@
-{}
+aditya-ec2-saksh-sg:
+  vpc_name: spoke-vpc
+  description: Security group for aditya-ec2-saksh EC2 instance
+  ingress_rules: []
+  egress_rules:
+  - from_port: 0
+    to_port: 0
+    protocol: '-1'
+    cidr_blocks:
+    - 0.0.0.0/0

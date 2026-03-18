@@ -1,1 +1,7 @@
-{}
+aditya-ec2-saksh:
+  instance_type: t3.micro
+  ami: ami-008fe2fc65df48dac
+  associate_public_ip_address: false
+  subnet_name: private-subnet
+  security_groups:
+  - aditya-ec2-saksh-sg
