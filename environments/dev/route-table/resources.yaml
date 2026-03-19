@@ -13,9 +13,6 @@ private-subnet-rt:
   - private-subnet
 spoke-vpc-private-rt:
   vpc_name: spoke-vpc
-  routes:
-  - cidr_block: 0.0.0.0/0
-    gateway_type: nat
-    gateway_name: spoke-vpc-nat-gw
+  routes: []
   subnet_associations:
   - private-subnet
